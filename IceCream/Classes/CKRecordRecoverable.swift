@@ -21,7 +21,7 @@ extension CKRecordRecoverable where Self: Object {
         let o = Self()
 
         if let o = o as? IceCreamCustomRecoverable {
-            return o.parseFromRecord(record: record, realm: realm)
+            return o.parseFromRecord(record: record, realm: realm) as? Self
         } else {
             for prop in o.objectSchema.properties {
                 var recordValue: Any?
