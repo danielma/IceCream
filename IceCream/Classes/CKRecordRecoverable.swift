@@ -13,7 +13,7 @@ public protocol CKRecordRecoverable {
 }
 
 public protocol IceCreamCustomRecoverable {
-  func parseFromRecord(record: CKRecord, realm: Realm) -> Self?
+  func parseFromRecord(record: CKRecord, realm: Realm) -> Object?
 }
 
 extension CKRecordRecoverable where Self: Object {
