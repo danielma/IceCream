@@ -66,7 +66,7 @@ extension SyncObject: Syncable {
         }
     }
     
-    public func add(record: CKRecord) {
+    open func add(record: CKRecord) {
         DispatchQueue.main.async {
             let realm = try! Realm()
             
