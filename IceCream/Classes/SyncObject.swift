@@ -24,6 +24,27 @@ open class SyncObject<T> where T: Object & CKRecordConvertible & CKRecordRecover
     public var pipeToEngine: ((_ recordsToStore: [CKRecord], _ recordIDsToDelete: [CKRecord.ID]) -> ())?
     
     public init() {}
+
+    open func add(record: CKRecord) {
+      DispatchQueue.main.async {
+        let realm = try! Realm()
+
+        guard let object = T().parseFromRecord(record: record, realm: realm) else {
+          print("There is something wrong with the converson from cloud record to local object")
+          return
+        }
+
+        /// If your model class includes a primary key, you can have Realm intelligently update or add objects based off of their primary key values using Realm().add(_:update:).
+        /// https://realm.io/docs/swift/latest/#objects-with-primary-keys
+        realm.beginWrite()
+        realm.add(object, update: true)
+        if let token = self.notificationToken {
+          try! realm.commitWrite(withoutNotifying: [token])
+        } else {
+          try! realm.commitWrite()
+        }
+      }
+    }
 }
 
 // MARK: - Zone information
@@ -65,28 +86,7 @@ extension SyncObject: Syncable {
             UserDefaults.standard.set(newValue, forKey: T.className() + IceCreamKey.hasCustomZoneCreatedKey.value)
         }
     }
-    
-    open func add(record: CKRecord) {
-        DispatchQueue.main.async {
-            let realm = try! Realm()
-            
-            guard let object = T().parseFromRecord(record: record, realm: realm) else {
-                print("There is something wrong with the converson from cloud record to local object")
-                return
-            }
-            
-            /// If your model class includes a primary key, you can have Realm intelligently update or add objects based off of their primary key values using Realm().add(_:update:).
-            /// https://realm.io/docs/swift/latest/#objects-with-primary-keys
-            realm.beginWrite()
-            realm.add(object, update: true)
-            if let token = self.notificationToken {
-                try! realm.commitWrite(withoutNotifying: [token])
-            } else {
-                try! realm.commitWrite()
-            }
-        }
-    }
-    
+
     public func delete(recordID: CKRecord.ID) {
         DispatchQueue.main.async {
             let realm = try! Realm()
